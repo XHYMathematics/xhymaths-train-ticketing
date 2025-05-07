@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <title>充值</title>
+    <style>
+        div
+        {
+            display: flex;
+            justify-content: center;
+        }
+        td
+        {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <a href="/balance"><button>&lt; 返回账户资金管理页面</button></a>
+    <span>
+        <span>当前用户：{{ userinfo['username'] }} || </span>
+        <span>账户类型：{{ userinfo['actype_name'] }} || </span>
+        {% if userinfo['actype'] == 0 %}
+        <span>账户余额：￥{{ userinfo['balance'] }} || </span>
+        {% endif %}
+    </span>
+    <form action="/logout" method="post" style="display: inline;">
+        <input type="submit" value="退出登录"/>
+    </form>
+    <hr/>
+    <h1>充值</h1>
+    <div>
+        <form method="post">
+            <label for="username">用户名：</label>
+            <input type="text" id="username" name="username" required/>
+            <br/>
+            <label for="money">充值金额：</label>
+            <input type="number" id="amount" name="amount" min="0.01" step="0.01" required/>
+            <br/>
+            <br/>
+            <input type="submit" value="充值"/>
+        </form>
+    </div>
+</body>
+</html>

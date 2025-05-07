@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <title>车票订单</title>
+    <style>
+        div
+        {
+            display: flex;
+            justify-content: center;
+        }
+        td
+        {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <a href="/main"><button>&lt; 返回主页</button></a>
+    <span>
+        <span>当前用户：{{ userinfo['username'] }} || </span>
+        <span>账户类型：{{ userinfo['actype_name'] }} || </span>
+        {% if userinfo['actype'] == 0 %}
+        <span>账户余额：￥{{ userinfo['balance'] }} || </span>
+        {% endif %}
+    </span>
+    <form action="/logout" method="post" style="display: inline;">
+        <input type="submit" value="退出登录"/>
+    </form>
+    <hr/>
+    <h1>车票订单</h1>
+    <form method="post">
+        {% if userinfo['actype'] == 1 %}
+        <label for="username">用户名：</label>
+        <input type="text" id="username" name="username" value="{{ order_search['username'] }}"/>
+        <br/>
+        <label for="tdate">始发日期：</label>
+        <input type="date" id="tdate" name="tdate" value="{{ order_search['tdate'] }}"/>
+        <br/>
+        <label for="tnumber">车次号：</label>
+        <input type="text" id="tnumber" name="tnumber" value="{{ order_search['tnumber'] }}"/>
+        <br/>
+        <label for="pass_stopno">经过站序号：</label>
+        <input type="text" id="pass_stopno" name="pass_stopno" value="{{ order_search['pass_stopno'] }}"/>
+        <br/>
+        <label for="carno">车厢号：</label>
+        <input type="text" id="carno" name="carno" value="{{ order_search['carno'] }}"/>
+        <br/>
+        <label for="seatno">座位号：</label>
+        <input type="text" id="seatno" name="seatno" value="{{ order_search['seatno'] }}"/>
+        <br/>
+        {% endif %}
+        <label for="orderno">订单号：</label>
+        <input type="text" id="orderno" name="orderno" value="{{ order_search['orderno'] }}"/>
+        <br/>
+        <label for="status">订单状态：</label>
+        <select name="status" id="status">
+            <option value="-1"{% if order_search['status']=='-1' %} selected{% endif %}>全部</option>
+            <option value="0"{% if order_search['status']=='0' %} selected{% endif %}>已支付</option>
+            <option value="1"{% if order_search['status']=='1' %} selected{% endif %}>已退款</option>
+        </select>
+        <input type="submit" value="筛选"/>
+        <input type="submit" name="clear" value="清空筛选"/>
+    </form>
+    <br/>
+            {% for order in orders %}
+            {% if not order[0] %}
+            {% if order[1] %}
+            {% if loop.index0 != 0 %}
+        </table>
+    </div>
+    <hr/>
+    <h2>历史订单</h2>
+            {% endif %}
+    <div>
+        <table border="1">
+            <tr>
+                <th>订单号</th>
+                <th>用户名</th>
+                <th>乘车日期</th>
+                <th>车次号</th>
+                <th>出发站</th>
+                <th>到达站</th>
+                <th>出发时间</th>
+                <th>到达时间</th>
+                <th>历时</th>
+                <th>车厢号</th>
+                <th>座位号</th>
+                <th>座位类型</th>
+                <th>票价</th>
+                <th>订单时间</th>
+                <th>订单状态</th>
+                <th>操作</th>
+            </tr>
+            {% endif %}
+            {% else %}
+            <tr>
+                <td>{{ order[0] }}</td>
+                <td>{{ order[1] }}</td>
+                <td>{{ order[2] }}</td>
+                <td>{{ order[3] }}</td>
+                <td>{{ order[4] }}</td>
+                <td>{{ order[5] }}</td>
+                <td>{{ order[6] }}</td>
+                <td>{{ order[7] }}{% if order[8] != 0 %}(+{{ order[8] }}){% endif %}</td>
+                <td>{{ order[9] }}</td>
+                <td>{{ order[10] }}车</td>
+                <td>{{ order[11] }}号</td>
+                <td>{{ rule['seat_names'][order[3][0]][order[12]] }}</td>
+                <td>￥{{ order[13] }}</td>
+                <td>{{ order[14] }}</td>
+                <td>{{ order_status_name[order[15]] }}</td>
+                <td>
+                    <form action="/train" method="post" style="display: inline;">
+                        <input type="hidden" name="tdate" value="{{ order[-2] }}"/>
+                        <input type="hidden" name="tnumber" value="{{ order[3] }}"/>
+                        <input type="submit" value="车次信息"/>
+                    </form>
+                    {% if order[15] == 0 and (userinfo['actype'] == 1 or (userinfo['username'] == order[1] and not order[-1])) %}
+                    <form action="/refund" method="post" style="display: inline;">
+                        <input type="hidden" name="orderno" value="{{ order[0] }}" required/>
+                        <input type="submit" value="退款"/>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

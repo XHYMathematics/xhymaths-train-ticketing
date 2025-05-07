@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <title>按车次查询</title>
+    <style>
+        div
+        {
+            display: flex;
+            justify-content: center;
+        }
+        td
+        {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <a href="/main"><button>&lt; 返回主页</button></a>
+    <span>
+        <span>当前用户：{{ userinfo['username'] }} || </span>
+        <span>账户类型：{{ userinfo['actype_name'] }} || </span>
+        {% if userinfo['actype'] == 0 %}
+        <span>账户余额：￥{{ userinfo['balance'] }} || </span>
+        {% endif %}
+    </span>
+    <form action="/logout" method="post" style="display: inline;">
+        <input type="submit" value="退出登录"/>
+    </form>
+    <hr/>
+    <h1>车次查询</h1>
+    <form method="post">
+        <label for="tdate">始发日期：</label>
+        <input type="date" id="tdate" name="tdate" value="{{ train_search['tdate'] }}" required/>
+        <label for="tnumber">车次号：</label>
+        <input type="text" id="tnumber" name="tnumber" value="{{ train_search['tnumber'] }}" required/>
+        <input type="submit" value="查询"/>
+        <input type="submit" name="train_date_search" formaction="/train_date" value="查询开行日期"/>
+        {% if userinfo['actype'] == 1 %}
+        <input type="submit" name="from_existing_train" formaction="/add_train" value="以此信息为基础添加车次"/>
+        {% endif %}
+    </form>
+    <br/>
+    {% if userinfo['actype'] == 1 %}
+    <a href="/train_info"><button>查看详细信息</button></a>
+    {% endif %}
+    <hr/>
+    <h1>车次信息</h1>
+    <div style="gap: 7%;">
+        <table id="stops" border="1">
+            <tr>
+                <th>停站序号</th>
+                <th>停站名</th>
+                <th>天数</th>
+                <th>到达时间</th>
+                <th>发车时间</th>
+                <th>停留时长</th>
+                <th>累计里程<br/>（单位：公里）</th>
+                <th>操作</th>
+            </tr>
+            {% for stop in stops %}
+            <tr>
+                <td>{{ stop[0] }}</td>
+                <td>{{ stop[1] }}</td>
+                <td>{{ stop[2] }}</td>
+                {% if stop[3] is not none %}
+                <td>{{ stop[3] }}</td>
+                {% else %}
+                <td>——</td>
+                {% endif %}
+                {% if stop[4] is not none %}
+                <td>{{ stop[4] }}</td>
+                {% else %}
+                <td>——</td>
+                {% endif %}
+                {% if stop[5] is not none %}
+                <td>{{ stop[5] }}分</td>
+                {% else %}
+                <td>——</td>
+                {% endif %}
+                <td>{{ stop[6] }}</td>
+                <td>
+                    <form action="/station" method="post">
+                        <input type="hidden" name="tdate" value="{{ stop[7] }}" required/>
+                        <input type="hidden" name="station_name" value="{{ stop[1] }}" required/>
+                        {% if loop.index0 == 0 %}
+                        <input type="hidden" name="arr_or_dep" value="1"/>
+                        {% endif %}
+                        <input type="submit" value="查看车站信息"/>
+                    </form>
+            </tr>
+            {% endfor %}
+        </table>
+        <table id="cars" border="1">
+            <tr>
+                <th>车厢号</th>
+                <th>座位数</th>
+                <th>座位类型</th>
+            </tr>
+            {% for car in cars %}
+            <tr>
+                <td>{{ car[0] }}</td>
+                <td>{{ car[1] }}</td>
+                <td>{{ rule['seat_names'][train_search['tnumber'][0]][car[2]] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

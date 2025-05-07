@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <title>主页</title>
+    <style>
+        div
+        {
+            display: flex;
+            justify-content: center;
+        }
+        td
+        {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <span>
+        <span>当前用户：{{ userinfo['username'] }} || </span>
+        <span>账户类型：{{ userinfo['actype_name'] }} || </span>
+        {% if userinfo['actype'] == 0 %}
+        <span>账户余额：￥{{ userinfo['balance'] }} || </span>
+        {% endif %}
+    </span>
+    <form action="/logout" method="post" style="display: inline;">
+        <input type="submit" value="退出登录"/>
+    </form>
+    <span style="float: inline-end;">
+        {% if userinfo['actype'] == 1 %}
+        <a href="/train_manage"><button>车次管理</button></a>
+        {% endif %}
+        <a href="/orders"><button>车票订单</button></a>
+        <a href="/balance"><button>账户资金管理</button></a>
+    </span>
+    <hr style="clear: both;"/>
+    <h1>车票查询</h1>
+    <p>提示：请输入完整的火车站名，不含“站”字，如：“哈尔滨西”“北京丰台”。</p>
+    <form method="post" id="search">
+        <label for="t_departure_date">乘车日期：</label>
+        <input type="date" id="t_departure_date" name="t_departure_date" value="{{ search['t_departure_date'] }}"{% if userinfo['actype'] != 1 %} min="{{ cur_date }}"{% endif %} required/>
+        <label for="begin_station">出发站：</label>
+        <input type="text" id="begin_station" name="begin_station" value="{{ search['begin_station'] }}" required/>
+        <label for="end_station">到达站：</label>
+        <input type="text" id="end_station" name="end_station" value="{{ search['end_station'] }}" required/>
+        <br/>
+        <span>车次类型：</span>
+        <lable for="1">纯数字</lable>
+        <input type="checkbox" id="1" name="1"{% if '1' in search %} checked{% endif %}/>
+        <lable for="K">K</lable>
+        <input type="checkbox" id="K" name="K"{% if 'K' in search %} checked{% endif %}/>
+        <lable for="T">T</lable>
+        <input type="checkbox" id="T" name="T"{% if 'T' in search %} checked{% endif %}/>
+        <lable for="Z">Z</lable>
+        <input type="checkbox" id="Z" name="Z"{% if 'Z' in search %} checked{% endif %}/>
+        <lable for="D">D</lable>
+        <input type="checkbox" id="D" name="D"{% if 'D' in search %} checked{% endif %}/>
+        <lable for="G">G</lable>
+        <input type="checkbox" id="G" name="G"{% if 'G' in search %} checked{% endif %}/>
+        <label for="sort">排序：</label>
+        <select name="sort">
+            <option value="1"{% if search['sort'][0]=='1' %} selected{% endif %}>出发时间</option>
+            <option value="2"{% if search['sort'][0]=='2' %} selected{% endif %}>到达时间</option>
+            <option value="4"{% if search['sort'][0]=='4' %} selected{% endif %}>历时</option>
+        </select>
+        <select name="sort">
+            <option value="asc"{% if search['sort'][1]=='asc' %} selected{% endif %}>升序</option>
+            <option value="desc"{% if search['sort'][1]=='desc' %} selected{% endif %}>降序</option>
+        </select>
+        <input type="submit" value="查询"/>
+    </form>
+    <br/>
+    <a href="/train"><button>按车次查询</button></a>
+    <a href="/station"><button>按车站查询</button></a>
+    <hr/>
+    <h1>车票列表</h1>
+    <p>提示：座位类型栏的显示格式为“余票数量 / 票价”，如“硬/二等座”栏下显示“20 / ￥100”，表示该车次硬/二等座有20张余票，票价为￥100。</p>
+    <div>
+        <table border="1" id="table">
+            <tr>
+                <th>车次号</th>
+                <th>出发时间</th>
+                <th>到达时间</th>
+                <th>历时</th>
+                {% for name in default_seat_name %}
+                <th>{{ name }}</th>
+                {% endfor %}
+                <th>操作</th>
+            </tr>
+            {% for train in trains %}
+            <tr>
+                <td>{{ train[0] }}</td>
+                <td>{{ train[1] }}</td>
+                <td>{{ train[2] }}{% if train[3] != 0 %}(+{{ train[3] }}){% endif %}</td>
+                <td>{{ train[4] }}</td>
+                {% for i in range(5, 9) %}
+                {% if train[i] is not none %}
+                <td>{{ train[i][0] }} / ￥{{ train[i][1] }}</td>
+                {% else %}
+                <td>——</td>
+                {% endif %}
+                {% endfor %}
+                <td>
+                    <form id="train" method="post" style="display: inline;" action="/train">
+                        <input type="hidden" name="tdate" value="{{ train_infos[loop.index0][0] }}" required/>
+                        <input type="hidden" name="tnumber" value="{{ train[0] }}" required/>
+                        <input type="submit" value="车次信息"/>
+                    </form>
+                    {% if userinfo['actype'] == 0 %}
+                    <form id="buy_ticket" method="post" style="display: inline;" action="/buy_ticket">
+                        <input type="hidden" name="t_departure_date" value="{{ search['t_departure_date'] }}" required/>
+                        <input type="hidden" name="tdate" value="{{ train_infos[loop.index0][0] }}" required/>
+                        <input type="hidden" name="tnumber" value="{{ train[0] }}" required/>
+                        <input type="hidden" name="begin_station_name" value="{{ search['begin_station'] }}" required/>
+                        <input type="hidden" name="end_station_name" value="{{ search['end_station'] }}" required/>
+                        <input type="hidden" name="departure_time" value="{{ train[1] }}" required/>
+                        <input type="hidden" name="arrival_time" value="{{ train[2] }}" required/>
+                        <input type="hidden" name="day_diff" value="{{ train[3] }}" required/>
+                        <input type="hidden" name="duration" value="{{ train[4] }}" required/>
+                        <input type="hidden" name="begin_stopno" value="{{ train_infos[loop.index0][1] }}" required/>
+                        <input type="hidden" name="end_stopno" value="{{ train_infos[loop.index0][2] }}" required/>
+                        <select name="seat_type" required>
+                            {% for i in range(4) %}
+                            {% if train[i+5] is not none %}
+                            <option value="{{ i }}">{{ rule['seat_names'][train[0][0]][i] }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                        <input type="submit" value="购票"/>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

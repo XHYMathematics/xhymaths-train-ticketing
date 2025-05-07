@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <title>退款</title>
+    <style>
+        div
+        {
+            display: flex;
+            justify-content: center;
+        }
+        td
+        {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <a href="/orders"><button>&lt; 返回车票订单页面</button></a>
+    <span>
+        <span>当前用户：{{ userinfo['username'] }} || </span>
+        <span>账户类型：{{ userinfo['actype_name'] }} || </span>
+        {% if userinfo['actype'] == 0 %}
+        <span>账户余额：￥{{ userinfo['balance'] }} || </span>
+        {% endif %}
+    </span>
+    <form action="/logout" method="post" style="display: inline;">
+        <input type="submit" value="退出登录"/>
+    </form>
+    <hr/>
+    <h1>确认退款信息</h1>
+    <p>请仔细确认您的退款信息，确认信息无误后，点击退款按钮退款：</p>
+    <div>
+        <table border="1">
+            <tr>
+                <th>订单号</th>
+                <th>用户名</th>
+                <th>乘车日期</th>
+                <th>车次号</th>
+                <th>出发站</th>
+                <th>到达站</th>
+                <th>出发时间</th>
+                <th>到达时间</th>
+                <th>历时</th>
+                <th>车厢号</th>
+                <th>座位号</th>
+                <th>座位类型</th>
+                <th>票价</th>
+                <th>订单时间</th>
+                <th>订单状态</th>
+                <th>操作</th>
+            </tr>
+            <tr>
+                <td>{{ order[0] }}</td>
+                <td>{{ order[1] }}</td>
+                <td>{{ order[2] }}</td>
+                <td>{{ order[3] }}</td>
+                <td>{{ order[4] }}</td>
+                <td>{{ order[5] }}</td>
+                <td>{{ order[6] }}</td>
+                <td>{{ order[7] }}{% if order[8] != 0 %}(+{{ order[8] }}){% endif %}</td>
+                <td>{{ order[9] }}</td>
+                <td>{{ order[10] }}车</td>
+                <td>{{ order[11] }}号</td>
+                <td>{{ rule['seat_names'][order[3][0]][order[12]] }}</td>
+                <td>￥{{ order[13] }}</td>
+                <td>{{ order[14] }}</td>
+                <td>{{ order_status_name[order[15]] }}</td>
+                <td>
+                    {% if order[15] == 0 and (userinfo['actype'] == 1 or (userinfo['username'] == order[1] and not order[-1])) %}
+                    <form action="/refund" method="post">
+                        <input type="hidden" name="confirmed" required/>
+                        <input type="hidden" name="orderno" value="{{ order[0] }}" required/>
+                        <input type="submit" id="refund_button" value="退款"/>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    </div>
+    <script>
+        document.getElementById('refund_button').addEventListener('click', function()
+        {
+            if(!confirm('您确定要退款吗？'))
+            {
+                event.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

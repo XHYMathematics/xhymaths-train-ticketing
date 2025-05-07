@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <title>购票</title>
+    <style>
+        div
+        {
+            display: flex;
+            justify-content: center;
+        }
+        td
+        {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <a href="/main"><button>&lt; 返回主页</button></a>
+    <span>
+        <span>当前用户：{{ userinfo['username'] }} || </span>
+        <span>账户类型：{{ userinfo['actype_name'] }} || </span>
+        {% if userinfo['actype'] == 0 %}
+        <span>账户余额：￥{{ userinfo['balance'] }} || </span>
+        {% endif %}
+    </span>
+    <form action="/logout" method="post" style="display: inline;">
+        <input type="submit" value="退出登录"/>
+    </form>
+    <hr/>
+    <h1>确认订单</h1>
+    <p>请仔细确认您的订单信息，确认信息无误后，输入账户密码支付：</p>
+    <div>
+        <label for="password">密码：</label>
+        <input type="password" id="password" name="password" form="buy_ticket" required/>
+    </div>
+    <br/>
+    <div>
+        <table border="1" id="table">
+            <tr>
+                <th>乘车日期</th>
+                <th>车次号</th>
+                <th>出发站</th>
+                <th>到达站</th>
+                <th>出发时间</th>
+                <th>到达时间</th>
+                <th>历时</th>
+                <th>座位类型</th>
+                <th>票价</th>
+                <th>操作</th>
+            </tr>
+            <tr>
+                <td>{{ buy_ticket['t_departure_date'] }}</td>
+                <td>{{ buy_ticket['tnumber'] }}</td>
+                <td>{{ buy_ticket['begin_station_name'] }}</td>
+                <td>{{ buy_ticket['end_station_name'] }}</td>
+                <td>{{ buy_ticket['departure_time'] }}</td>
+                <td>{{ buy_ticket['arrival_time'] }}{% if buy_ticket['day_diff'] != '0' %}(+{{ buy_ticket['day_diff'] }}){% endif %}</td>
+                <td>{{ buy_ticket['duration'] }}</td>
+                <td>{{ rule['seat_names'][buy_ticket['tnumber'][0]][buy_ticket['seat_type']|int] }}</td>
+                <td>￥{{ price }}</td>
+                <td>
+                    <form id="buy_ticket" action="/buy_ticket" method="post">
+                        <input type="hidden" name="t_departure_date" value="{{ buy_ticket['t_departure_date'] }}" required/>
+                        <input type="hidden" name="tdate" value="{{ buy_ticket['tdate'] }}" required/>
+                        <input type="hidden" name="tnumber" value="{{ buy_ticket['tnumber'] }}" required/>
+                        <input type="hidden" name="begin_station_name" value="{{ buy_ticket['begin_station_name'] }}" required/>
+                        <input type="hidden" name="end_station_name" value="{{ buy_ticket['end_station_name'] }}" required/>
+                        <input type="hidden" name="departure_time" value="{{ buy_ticket['departure_time'] }}" required/>
+                        <input type="hidden" name="arrival_time" value="{{ buy_ticket['arrival_time'] }}" required/>
+                        <input type="hidden" name="day_diff" value="{{ buy_ticket['day_diff'] }}" required/>
+                        <input type="hidden" name="duration" value="{{ buy_ticket['duration'] }}" required/>
+                        <input type="hidden" name="begin_stopno" value="{{ buy_ticket['begin_stopno'] }}" required/>
+                        <input type="hidden" name="end_stopno" value="{{ buy_ticket['end_stopno'] }}" required/>
+                        <input type="hidden" name="seat_type" value="{{ buy_ticket['seat_type'] }}" required/>
+                        <input type="submit" value="支付"/>
+                    </form>
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

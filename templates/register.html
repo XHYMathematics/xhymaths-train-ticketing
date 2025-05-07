@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <title>注册</title>
+</head>
+<body>
+    <h1>注册</h1>
+    <form method="post">
+        <label for="username">用户名：</label><input type="text" id="username" name="username" required/><br/>
+        <label for="password">密码：</label><input type="password" id="password" name="password" required/><br/>
+        <label for="confirm_password">确认密码：</label><input type="password" id="confirm_password" name="confirm_password" required/><br/>
+        <label for="actype">账户类型：</label>
+        <select name="actype" id="actype" required>
+            <option value="0">普通用户</option>
+            <option value="1">管理员</option>
+        </select>
+        <br/>
+        <label for="super_admin_password">超级管理员密码（注册管理员账户时需要）：</label>
+        <br/>
+        <input type="password" id="super_admin_password" name="super_admin_password"/>
+        <br/>
+        <br/>
+        <input type="submit" value="注册"/>
+    </form>
+</body>
+</html>

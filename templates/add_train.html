@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <title>添加车次</title>
+    <style>
+        div
+        {
+            display: flex;
+            justify-content: center; 
+        }
+        td
+        {
+            text-align: center;
+        }
+        input[type="text"], input[type="number"]
+        {
+            width: 50px;
+        }
+        input[type="text"][class="station_name"]
+        {
+            width: 70px;
+        }
+    </style>
+</head>
+<body>
+    <a href="/train_manage"><button>&lt; 返回车次管理页面</button></a>
+    <span>
+        <span>当前用户：{{ userinfo['username'] }} || </span>
+        <span>账户类型：{{ userinfo['actype_name'] }} || </span>
+        {% if userinfo['actype'] == 0 %}
+        <span>账户余额：￥{{ userinfo['balance'] }} || </span>
+        {% endif %}
+    </span>
+    <form action="/logout" method="post" style="display: inline;">
+        <input type="submit" value="退出登录"/>
+    </form>
+    <hr/>
+    <h1>添加车次</h1>
+    <form method="post" id="clear_form"></form>
+    <form method="post">
+        <div style="gap: 3%;">
+            <span>
+                <label for="begin_tdate">开始日期：</label>
+                <input type="date" id="begin_tdate" name="begin_tdate" value="{{ add_train['begin_tdate'] }}" required/>
+            </span>
+            <span>
+                <label for="end_tdate">结束日期：</label>
+                <input type="date" id="end_tdate" name="end_tdate" value="{{ add_train['end_tdate'] }}" required/>
+            </span>
+            <span>
+                <label for="tnumber">车次号：</label>
+                <input type="text" id="tnumber" name="tnumber" value="{{ add_train['tnumber'] }}" required/>
+            </span>
+            <input type="submit" name="clear" form="clear_form" value="清空"/>
+            <input type="submit" name="save" value="保存"/>
+            <input type="submit" value="添加车次"/>
+        </div>
+        <br/>
+        <div style="gap: 7%;">
+            <table id="stops">
+                <thead>
+                    <tr>
+                        <th>停站序号</th>
+                        <th>停站名</th>
+                        <th>天数</th>
+                        <th>进站时间</th>
+                        <th>出站时间</th>
+                        <th>累计里程<br/>（单位：公里）</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if add_train['stops'] %}
+                    {% for i in range(0, add_train['stops']|length, 5) %}
+                    <tr>
+                        <td>{{ i // 5 + 1 }}</td>
+                        <td><input type="text" class="station_name" name="stops" value="{{ add_train['stops'][i] }}" required/></td>
+                        <td><input type="number" class="arrival_day" name="stops" value="{{ add_train['stops'][i+1] }}" min="1" step="1" required/></td>
+                        <td><input type="time" class="arrival_time" name="stops" value="{{ add_train['stops'][i+2] }}"/></td>
+                        <td><input type="time" class="departure_time" name="stops" value="{{ add_train['stops'][i+3] }}"/></td>
+                        <td><input type="number" class="dist_prefsum" name="stops" value="{{ add_train['stops'][i+4] }}" min="0" step="1" required/></td>
+                        <td><button type="button" class="add_tr">+</button></td>
+                        <td><button type="button" class="delete_tr">-</button></td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td>1</td>
+                        <td><input type="text" class="station_name" name="stops" required/></td>
+                        <td><input type="number" class="arrival_day" name="stops" value="1" min="1" step="1" required/></td>
+                        <td><input type="time" class="arrival_time" name="stops"/></td>
+                        <td><input type="time" class="departure_time" name="stops"/></td>
+                        <td><input type="number" class="dist_prefsum" name="stops" value="0" min="0" step="1" required/></td>
+                        <td><button type="button" class="add_tr">+</button></td>
+                        <td><button type="button" class="delete_tr">-</button></td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+            <table id="cars">
+                <thead>
+                    <tr>
+                        <th>车厢号</th>
+                        <th>座位数</th>
+                        <th>座位类型</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if add_train['cars'] %}
+                    {% for i in range(0, add_train['cars']|length, 3) %}
+                    <tr>
+                        <td><input type="text" class="carno" name="cars" value="{{ add_train['cars'][i] }}" required/></td>
+                        <td><input type="number" class="seat_num" name="cars" value="{{ add_train['cars'][i+1] }}" min="1" step="1" required/></td>
+                        <td>
+                            <select class="seat_type" name="cars" required>
+                                {% for j in range(4) %}
+                                <option value="{{ j }}"{% if add_train['cars'][i+2] == j|string %} selected{% endif %}>{{ default_seat_name[j] }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td><button type="button" class="add_tr">+</button></td>
+                        <td><button type="button" class="delete_tr">-</button></td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td><input type="text" class="carno" name="cars" required/></td>
+                        <td><input type="number" class="seat_num" name="cars" min="1" step="1" required/></td>
+                        <td>
+                            <select class="seat_type" name="cars" required>
+                                {% for i in range(4) %}
+                                <option value="{{ i }}">{{ default_seat_name[i] }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td><button type="button" class="add_tr">+</button></td>
+                        <td><button type="button" class="delete_tr">-</button></td> 
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+    <script>
+        function delete_tr_func(btn)
+        {
+            let tr = btn.parentElement.parentElement;
+            if(tr.parentElement.children.length > 1) tr.parentElement.removeChild(tr);
+        }
+        function add_tr_func(btn)
+        {
+            let tr = btn.parentElement.parentElement;
+            let tr_clone = tr.cloneNode(true);
+            tr_clone.getElementsByClassName("add_tr")[0].addEventListener("click", function(){add_tr_func(this)});
+            tr_clone.getElementsByClassName("delete_tr")[0].addEventListener("click", function(){delete_tr_func(this)});
+            let table = tr.parentElement.parentElement;
+            if(table.id == "cars")
+            {
+                tr_clone.children[2].children[0].selectedIndex = tr.children[2].children[0].selectedIndex;
+            }
+            tr.parentElement.insertBefore(tr_clone, tr);
+            if(table.id == "stops")
+            {
+                let trs = table.children[1].children;
+                for(let tr of trs) tr.children[0].innerText = tr.rowIndex;
+            }
+            else if(table.id == "cars")
+            {
+                if(tr.children[0].children[0].value)
+                {
+                    tr.children[0].children[0].value = parseInt(tr.children[0].children[0].value) + 1;
+                }
+            }
+            tr_clone.scrollIntoView();
+        }
+        let add_tr_buttons = document.getElementsByClassName("add_tr");
+        let delete_tr_buttons = document.getElementsByClassName("delete_tr");
+        for(let btn of add_tr_buttons) btn.addEventListener("click", function(){add_tr_func(this)});
+        for(let btn of delete_tr_buttons) btn.addEventListener("click", function(){delete_tr_func(this)});
+        document.getElementById("clear_form").addEventListener("submit", function()
+        {
+            if(!confirm("确认清空当前填写的车次信息吗？"))
+            {
+                event.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

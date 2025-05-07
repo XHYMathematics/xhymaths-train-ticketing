@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <title>车次详细信息</title>
+</head>
+<body>
+    <a href="/train_manage"><button>&lt; 返回车次管理页面</button></a>
+    <span>
+        <span>当前用户：{{ userinfo['username'] }} || </span>
+        <span>账户类型：{{ userinfo['actype_name'] }} || </span>
+        {% if userinfo['actype'] == 0 %}
+        <span>账户余额：￥{{ userinfo['balance'] }} || </span>
+        {% endif %}
+    </span>
+    <form action="/logout" method="post" style="display: inline;">
+        <input type="submit" value="退出登录"/>
+    </form>
+    <hr/>
+    <h1>车次查询</h1>
+    <form method="post">
+        <label for="tdate">始发日期：</label>
+        <input type="date" id="tdate" name="tdate" value="{{ train_search['tdate'] }}" required/>
+        <label for="tnumber">车次号：</label>
+        <input type="text" id="tnumber" name="tnumber" value="{{ train_search['tnumber'] }}" required/>
+        <input type="submit" value="查询"/>
+    </form>
+    <br/>
+    <a href="/train"><button>查看简略信息</button></a>
+    <hr/>
+    <h1>车次详细信息</h1>
+    <table border="1">
+        <colgroup id="train_info_colgroup">
+            {% if stops %}
+            {% for i in range(7) %}
+            <col/>
+            {% endfor %}
+            {% for car in stops[0][7] %}
+            {% for seat in car %}
+            <col/>
+            {% endfor %}
+            {% endfor %}
+            {% endif %}
+        </colgroup>
+        <thead>
+            <tr>
+                <th>停站序号</th>
+                <th>停站名</th>
+                <th>天数</th>
+                <th>到达时间</th>
+                <th>发车时间</th>
+                <th>停留时长</th>
+                <th>累计里程（单位：公里）</th>
+                {% for car in cars %}
+                {% for j in range(car[1]) %}
+                <th>
+                    {{ car[0] }}
+                    <br/>
+                    |
+                    <br/>
+                    {{ j+1 }}
+                    <br/>
+                    <button type="button" class="col_highlight">∨</button>
+                </th>
+                {% endfor %}
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody id="train_info">
+            {% for stop in stops %}
+            <tr>
+                {% set stopno = loop.index %}
+                <td>
+                    {{ stop[0] }}
+                    <button type="button" class="tr_highlight">&gt;</button>
+                </td>
+                <td>{{ stop[1] }}</td>
+                <td>{{ stop[2] }}</td>
+                {% if stop[3] is not none %}
+                <td>{{ stop[3] }}</td>
+                {% else %}
+                <td>——</td>
+                {% endif %}
+                {% if stop[4] is not none %}
+                <td>{{ stop[4] }}</td>
+                {% else %}
+                <td>——</td>
+                {% endif %}
+                {% if stop[5] is not none %}
+                <td>{{ stop[5] }}分</td>
+                {% else %}
+                <td>——</td>
+                {% endif %}
+                <td>{{ stop[6] }}</td>
+                {% for car in stop[7] %}
+                {% set outer_index = loop.index0 %}
+                {% for seat in car %}
+                <td>
+                    {% if seat == 0 %}
+                    {{ seat }}
+                    {% else %}
+                    <form action="/orders" method="post">
+                        <input type="hidden" name="from_train_info" required/>
+                        <input type="hidden" name="pass_stopno" value="{{ stopno }}" required/>
+                        <input type="hidden" name="carno" value="{{ cars[outer_index][0] }}" required/>
+                        <input type="hidden" name="seatno" value="{{ loop.index }}" required/>
+                        <input type="hidden" name="status" value="0" required/>
+                        <input type="submit" value="{{ seat }}"/>
+                    </form>
+                    {% endif %}
+                </td>
+                {% endfor %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <script>
+        function tr_color_change(btn)
+        {
+            let tr = btn.parentElement.parentElement;
+            if(!tr.style.getPropertyValue("background-color")) tr.style.backgroundColor = "rgb(128, 255, 128)";
+            else tr.style.removeProperty("background-color");
+        }
+        function col_color_change(btn)
+        {
+            console.log(btn.parentElement.cellIndex);
+            let col = document.getElementById("train_info_colgroup").children[btn.parentElement.cellIndex];
+            if(!col.style.getPropertyValue("background-color")) col.style.backgroundColor = "rgb(128, 128, 255)";
+            else col.style.removeProperty("background-color");
+        }
+        let tr_highlight_btns = document.getElementsByClassName("tr_highlight");
+        let col_highlight_btns = document.getElementsByClassName("col_highlight");
+        for(let btn of tr_highlight_btns) btn.addEventListener("click", function(){tr_color_change(this)});
+        for(let btn of col_highlight_btns) btn.addEventListener("click", function(){col_color_change(this)});
+    </script>
+</body>
+</html>

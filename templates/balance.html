@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <title>账户资金管理</title>
+    <style>
+        div
+        {
+            display: flex;
+            justify-content: center;
+        }
+        td
+        {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <a href="/main"><button>&lt; 返回主页</button></a>
+    <span>
+        <span>当前用户：{{ userinfo['username'] }} || </span>
+        <span>账户类型：{{ userinfo['actype_name'] }} || </span>
+        {% if userinfo['actype'] == 0 %}
+        <span>账户余额：￥{{ userinfo['balance'] }} || </span>
+        {% endif %}
+    </span>
+    <form action="/logout" method="post" style="display: inline;">
+        <input type="submit" value="退出登录"/>
+    </form>
+    <span style="float: inline-end;">
+        {% if userinfo['actype'] == 1 %}
+        <a href="/recharge"><button>充值</button></a>
+        {% endif %}
+    </span>
+    <hr style="clear: both;"/>
+    <h1>账户资金管理</h1>
+    <form method="post">
+        {% if userinfo['actype'] == 1 %}
+        <label for="username">用户名：</label>
+        <input type="text" id="username" name="username" value="{{ change_search['username'] }}"/>
+        <br/>
+        {% endif %}
+        <label for="changeno">变动记录编号：</label>
+        <input type="number" id="changeno" name="changeno" value="{{ change_search['changeno'] }}"/>
+        <br/>
+        <label for="earliest_datetime">最早时间：</label>
+        <input type="datetime-local" name="earliest_datetime" value="{{ change_search['earliest_datetime'] }}"/>
+        <br/>
+        <label for="latest_datetime">最晚时间：</label>
+        <input type="datetime-local" name="latest_datetime" value="{{ change_search['latest_datetime'] }}"/>
+        <br/>
+        <label for="change_type">变动类型：</label>
+        <select name="change_type" id="change_type">
+            <option value="-1">全部</option>
+            <option value="0">充值</option>
+            <option value="1">消费</option>
+            <option value="2">退款</option>
+        </select>
+        <br/>
+        <label for="min_amount">最小金额：</label>
+        <input type="number" name="min_amount" value="{{ change_search['min_amount'] }}" min="0.01" step="0.01"/>
+        <br/>
+        <label for="max_amount">最大金额：</label>
+        <input type="number" name="max_amount" value="{{ change_search['max_amount'] }}" min="0.01" step="0.01"/>
+        <br/>
+        <br/>
+        <input type="submit" value="筛选"/>
+        <input type="submit" name="clear" value="清空筛选"/>
+    </form>
+    <p>账户余额：￥{% if balance is not none %}{{ balance }}{% else %}——{% endif %}</p>
+    <div>
+        <table border="1">
+            <tr>
+                <th>变动记录编号</th>
+                <th>用户名</th>
+                <th>变动金额</th>
+                <th>变动时间</th>
+                <th>变动类型</th>
+                <th>关联订单</th>
+                <th>操作</th>
+            </tr>
+            {% for change in changes %}
+            <tr>
+                <td>{{ change[0] }}</td>
+                <td>{{ change[1] }}</td>
+                <td>￥{{ change[2] }}</td>
+                <td>{{ change[3] }}</td>
+                <td>{{ change_type_name[change[4]] }}</td>
+                {% if change[5] is not none %}
+                <td>{{ change[5] }}</td>
+                {% else %}
+                <td>——</td>
+                {% endif %}
+                <td>
+                    {% if change[5] is not none %}
+                    <form method="post" style="display: inline;" action="/orders">
+                        <input type="hidden" name="orderno" value="{{ change[5] }}" required/>
+                        <input type="submit" value="查看关联订单"/>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

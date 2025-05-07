@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <title>车次管理</title>
+    <style>
+        div
+        {
+            display: flex;
+            justify-content: center; 
+        }
+    </style>
+</head>
+<body>
+    <a href="/main"><button>&lt; 返回主页</button></a>
+    <span>
+        <span>当前用户：{{ userinfo['username'] }} || </span>
+        <span>账户类型：{{ userinfo['actype_name'] }} || </span>
+        {% if userinfo['actype'] == 0 %}
+        <span>账户余额：￥{{ userinfo['balance'] }} || </span>
+        {% endif %}
+    </span>
+    <form action="/logout" method="post" style="display: inline;">
+        <input type="submit" value="退出登录"/>
+    </form>
+    <hr/>
+    <h1>车次管理</h1>
+    <div><a href="/add_train"><button>添加车次</button></a></div>
+    <br/>
+    <div><a href="/train_list"><button>车次列表</button></a></div>
+    <br/>
+    <div><a href="/train_info"><button>车次详细信息</button></a></div>
+</body>
+</html>
